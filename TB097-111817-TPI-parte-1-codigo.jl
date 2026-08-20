@@ -42,3 +42,27 @@ end
 function b(Tc::Float64, Pc::Float64)
     return 0.0778 * 8.314462618 * Tc / Pc
 end
+
+# --------- Parámetros de mezcla de Peng-Robinson ---------
+
+function b_mix(y::Vector{Float64}, componentes::Vector{Componente})
+    bi = [b(c.Tc, c.Pc) for c in componentes]
+    return sum(y .* bi)
+end
+
+function a_mix(y::Vector{Float64}, T::Float64, mezcla::MezclaTernaria)
+    comps = mezcla.componentes
+    k_ij = mezcla.kij
+    n = length(comps)
+
+    a = [a(c.Tc, c.Pc, alpha(c.Tc, T, k(c.w))) for c in comps]
+
+    a_m = 0.0
+    for i in 1:n
+        for j in 1:n
+            aij = sqrt(a[i]*a[j])*(1 - k_ij[i, j])
+            a_m += y[i]*y[j]*aij 
+        end
+    end
+end
+
