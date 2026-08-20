@@ -13,5 +13,5 @@ jobs:
             - uses: julia-actions/setup-julia@v2
               with:
                 version: '1'
-            - run: julia --project=. -e 'using Pkg; Pkg.test()'
+            - run: julia --project=. test/runtests.jl
 
