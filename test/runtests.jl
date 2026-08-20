@@ -1,6 +1,6 @@
 using Test
 
-include("TB097-111817-TPI-parte-1-codigo.jl")
+include("../TB097-111817-TPI-parte-1-codigo.jl")
 
 @testset "Parámetros de Peng-Robinson (fluido puro)" begin
     # Lo corre para el Amoníaco, Perry 8th ed 2-502
