@@ -1,4 +1,5 @@
 using Test
+using Polynomials: Polynomial, roots
 
 include("../TB097-111817-TPI-parte-1-codigo.jl")
 
