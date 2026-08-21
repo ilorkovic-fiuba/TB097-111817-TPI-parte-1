@@ -72,12 +72,20 @@ function a_mix(y::Vector{Float64}, T::Float64, mezcla::MezclaTernaria)
     return a_m
 end
 
+# No especifico A_mix porque la fórmula es la misma independiente de a o a_mix, entonces confunde
+function A(a::Float64, T, P)
+    A_calc = (a * P) / ( R^2 * T^2)
+    return A_calc
+end
+
+function B(b::Float64, T, P)
+    B_calc = (b * P) / ( R * T)
+    return B_calc
+end
+
 # --------- Resolución de la EoS ---------
 
-function resolucion_PR(a_mix::Float64, b_mix::Float64, T, P)
-    A_mix = (a_mix * P) / ( R^2 * T^2)
-    B_mix = (b_mix * P) / ( R * T)
-
+function resolucion_PR(A_mix::Float64, B_mix::Float64)
     c0 = - ( (A_mix * B_mix) - B_mix^2 - B_mix^3 )
     c1 = A_mix - 3*B_mix^2 - 2*B_mix
     c2 = - (1 - B_mix)
@@ -98,3 +106,5 @@ function resolucion_PR(a_mix::Float64, b_mix::Float64, T, P)
     end
 end
 
+function phi(Z::Float64, z::Vector{Float64} A_mix, B_mix, Bi, Ai, Aij_matrix)
+    t1 = 
