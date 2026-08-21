@@ -1,3 +1,7 @@
+using Polynomials: Polynomial, roots
+
+R = 8.314462618
+
 # --------- Variables termodinámicas de cada componente ---------
 struct Componente
     nombre::String
@@ -35,18 +39,19 @@ function alpha(Tc::Float64, T::Float64, k::Float64)
 end
 
 function a(Tc::Float64, Pc::Float64, alpha::Float64)
-    return 0.45724 * ( 8.314462618^2 * Tc^2 / Pc ) * alpha
+    return 0.45724 * ( R^2 * Tc^2 / Pc ) * alpha
     # Uso en todo el código Sistema Internacional (8.31 J/mol.k)
 end
 
 function b(Tc::Float64, Pc::Float64)
-    return 0.0778 * 8.314462618 * Tc / Pc
+    return 0.0778 * R * Tc / Pc
 end
 
 # --------- Parámetros de mezcla de Peng-Robinson ---------
 
-function b_mix(y::Vector{Float64}, componentes::Vector{Componente})
-    bi = [b(c.Tc, c.Pc) for c in componentes]
+function b_mix(y::Vector{Float64}, mezcla::MezclaTernaria)
+    comps = mezcla.componentes
+    bi = [b(c.Tc, c.Pc) for c in comps]
     return sum(y .* bi)
 end
 
@@ -55,14 +60,41 @@ function a_mix(y::Vector{Float64}, T::Float64, mezcla::MezclaTernaria)
     k_ij = mezcla.kij
     n = length(comps)
 
-    a = [a(c.Tc, c.Pc, alpha(c.Tc, T, k(c.w))) for c in comps]
+    a_calc = [a(c.Tc, c.Pc, alpha(c.Tc, T, k(c.w))) for c in comps]
 
     a_m = 0.0
     for i in 1:n
         for j in 1:n
-            aij = sqrt(a[i]*a[j])*(1 - k_ij[i, j])
+            aij = sqrt(a_calc[i]*a_calc[j])*(1 - k_ij[i, j])
             a_m += y[i]*y[j]*aij 
         end
+    end
+    return a_m
+end
+
+# --------- Resolución de la EoS ---------
+
+function resolucion_PR(a_mix::Float64, b_mix::Float64, T, P)
+    A_mix = (a_mix * P) / ( R^2 * T^2)
+    B_mix = (b_mix * P) / ( R * T)
+
+    c0 = - ( (A_mix * B_mix) - B_mix^2 - B_mix^3 )
+    c1 = A_mix - 3*B_mix^2 - 2*B_mix
+    c2 = - (1 - B_mix)
+
+    pol = Polynomial([c0, c1, c2, 1])
+
+    raices_reales = real.(roots(pol)[abs.(imag(roots(pol))) .< 1e-8])
+    sort!(raices_reales)
+
+    if length(raices_reales) > 2
+        return [raices_reales[1], raices_reales[3]]
+    end
+    if length(raices_reales) == 2
+        return [raices_reales[1], raices_reales[2]]
+    end
+    if length(raices_reales) == 1
+        return [raices_reales[1], raices_reales[1]]
     end
 end
 
