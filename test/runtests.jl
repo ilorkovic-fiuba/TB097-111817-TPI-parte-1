@@ -14,4 +14,24 @@ include("../TB097-111817-TPI-parte-1-codigo.jl")
     b_amoniaco = b(405.65, 112.8*100000)
     @test isapprox(b_amoniaco, 23.262e-6, rtol=1e-3)
 end
-     
+    
+@testset "Resolución de Cúbica" begin
+    benceno = Componente("Benceno", 562.2, 4890000.0, 0.212)
+    tolueno = Componente("Tolueno", 591.8, 4120000.0, 0.263)
+    xileno = Componente("Xileno", 616.2, 3520000.0, 0.322)
+
+    z_btx = [0.3, 0.4, 0.3]
+
+    kij = [ 0.0    0.0  0.0;   
+            0.0   0.0   0.0; 
+            0.0   0.0  0.0  ]
+
+    btx = MezclaTernaria("BTX", [benceno, tolueno, xileno], kij)
+
+    a_btx = a_mix(z_btx, 380.0, btx)
+    b_btx = b_mix(z_btx, btx)
+
+    Z = resolucion_PR(a_btx, b_btx, 380.0, 101325.0)
+
+    @test isapprox(Z, [0.00381814, 0.969516], rtol=5e-2 )
+end
